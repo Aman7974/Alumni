@@ -1,47 +1,44 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../utils/db.js';
+import mongoose from 'mongoose';
 
-const Career = sequelize.define('Career', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const careerSchema = new mongoose.Schema({
   company: {
-    type: DataTypes.STRING(250),
-    allowNull: false
+    type: String,
+    required: true
   },
   location: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true
   },
   job_title: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true
   },
   description: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true
   },
   user_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   date_created: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+    type: Date,
+    default: Date.now
   }
 }, {
-  tableName: 'careers',
+  collection: 'careers',
   timestamps: false
 });
 
-// Associations
-Career.associate = (models) => {
-  Career.belongsTo(models.User, {
-    foreignKey: 'user_id',
-    as: 'user'
-  });
-};
+careerSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
 
-export default Career;
+careerSchema.set('toJSON', { virtuals: true });
+careerSchema.set('toObject', { virtuals: true });
+
+export default mongoose.model('Career', careerSchema);

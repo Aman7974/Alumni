@@ -1,44 +1,38 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../utils/db.js';
+import mongoose from 'mongoose';
 
-const Event = sequelize.define('Event', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const eventSchema = new mongoose.Schema({
   title: {
-    type: DataTypes.STRING(250),
-    allowNull: false
+    type: String,
+    required: true
   },
   content: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true
   },
   schedule: {
-    type: DataTypes.DATE,
-    allowNull: false
+    type: Date,
+    required: true
   },
   banner: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-    defaultValue: ''
+    type: String,
+    default: ''
   },
   date_created: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+    type: Date,
+    default: Date.now
   }
 }, {
-  tableName: 'events',
+  collection: 'events',
   timestamps: false
 });
 
-// Associations
-Event.associate = (models) => {
-  Event.hasMany(models.EventCommit, {
-    foreignKey: 'event_id',
-    as: 'commits'
-  });
-};
+eventSchema.virtual('commits', {
+  ref: 'EventCommit',
+  localField: '_id',
+  foreignField: 'event_id'
+});
 
-export default Event;
+eventSchema.set('toJSON', { virtuals: true });
+eventSchema.set('toObject', { virtuals: true });
+
+export default mongoose.model('Event', eventSchema);

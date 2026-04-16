@@ -1,5 +1,6 @@
 import express from 'express';
 import multer from 'multer';
+import { authenticate, isAdmin } from '../middlewares/auth.middleware.js';
 import {
   updateAlumnusStatus,
   deleteAlumnus,
@@ -10,13 +11,16 @@ import {
 import { avatarUpload } from '../utils/file-upload.js';
 
 const router = express.Router();
-// const avatarUpload = multer(uploadConfig.avatar);
 
+// Public routes
 router.get('/', alumniList);
 router.get('/:id', alumnus);
-router.put('/status', updateAlumnusStatus);
-router.delete('/:id', deleteAlumnus);
 
-router.put('/account', avatarUpload.single('avatar'), updateAccount);
+// Admin-only routes
+router.put('/status', authenticate, isAdmin, updateAlumnusStatus);
+router.delete('/:id', authenticate, isAdmin, deleteAlumnus);
+
+// User updates their own account
+router.put('/account', authenticate, avatarUpload.single('avatar'), updateAccount);
 
 export default router;

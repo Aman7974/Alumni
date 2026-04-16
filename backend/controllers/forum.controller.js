@@ -2,10 +2,7 @@ import { ForumTopic, ForumComment, User } from '../models/Index.js';
 
 export async function listForums(req, res, next) {
     try {
-        const forums = await ForumTopic.findAll({
-            include: { model: User, as: 'user', attributes: ['name'] },
-            order: [['id', 'DESC']]
-        });
+        const forums = await ForumTopic.find().populate({ path: 'user_id', select: 'name' }).sort({ _id: -1 });
         res.json(forums);
     } catch (err) { next(err); }
 }
@@ -19,25 +16,23 @@ export async function addForum(req, res, next) {
 
 export async function updateForum(req, res, next) {
     try {
-        await ForumTopic.update(req.body, { where: { id: req.params.id } });
+        await ForumTopic.findByIdAndUpdate(req.params.id, req.body);
         res.json({ message: 'Updated' });
     } catch (err) { next(err); }
 }
 
 export async function deleteForum(req, res, next) {
     try {
-        await ForumTopic.destroy({ where: { id: req.params.id } });
+        await ForumTopic.findByIdAndDelete(req.params.id);
         res.json({ message: 'Deleted' });
     } catch (err) { next(err); }
 }
 
 export async function listComments(req, res, next) {
   try {
-    const comments = await ForumComment.findAll({
-      where: { topic_id: req.params.topicId },
-      include: { model: User, as: 'user', attributes: ['name'] },
-      order: [['id', 'ASC']],
-    });
+    const comments = await ForumComment.find({ topic_id: req.params.topicId })
+      .populate({ path: 'user_id', select: 'name' })
+      .sort({ _id: 1 });
     res.json(comments);
   } catch (err) {
     next(err);
@@ -50,7 +45,7 @@ export async function addComment(req, res, next) {
     const payload = {
       comment:  req.body.c,
       user_id:  req.body.user_id,
-      topic_id: +req.params.topicId
+      topic_id: req.params.topicId
     };
     const comment = await ForumComment.create(payload);
     res.status(201).json(comment);
@@ -61,14 +56,14 @@ export async function addComment(req, res, next) {
 
 export async function updateComment(req, res, next) {
     try {
-        await ForumComment.update(req.body, { where: { id: req.params.id } });
+        await ForumComment.findByIdAndUpdate(req.params.id, req.body);
         res.json({ message: 'Updated' });
     } catch (err) { next(err); }
 }
 
 export async function deleteComment(req, res, next) {
     try {
-        await ForumComment.destroy({ where: { id: req.params.id } });
+        await ForumComment.findByIdAndDelete(req.params.id);
         res.json({ message: 'Deleted' });
     } catch (err) { next(err); }
 }

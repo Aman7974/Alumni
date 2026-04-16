@@ -1,35 +1,31 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../utils/db.js';
+import mongoose from 'mongoose';
 
-const SystemSetting = sequelize.define('SystemSetting', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const systemSettingSchema = new mongoose.Schema({
   name: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true
   },
   email: {
-    type: DataTypes.STRING(200),
-    allowNull: false
+    type: String,
+    required: true,
+    lowercase: true,
+    trim: true
   },
   contact: {
-    type: DataTypes.STRING(20),
-    allowNull: false
+    type: String,
+    required: true
   },
   cover_img: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true
   },
   about_content: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true
   }
 }, {
-  tableName: 'system_settings',
+  collection: 'system_settings',
   timestamps: false
 });
 
-export default SystemSetting;
+export default mongoose.model('SystemSetting', systemSettingSchema);

@@ -1,34 +1,42 @@
+import User from '../models/User.js';
 import bcrypt from 'bcrypt';
-import { User, AlumnusBio } from '../models/Index.js';
 
 export async function listUsers(req, res, next) {
-  try {
-    const users = await User.findAll({ order: [['name','ASC']] });
-    res.json(users);
-  } catch (err) { next(err); }
+    try {
+        const users = await User.find().select('-password');
+        res.json(users);
+    } catch (err) {
+        next(err);
+    }
 }
 
 export async function updateUser(req, res, next) {
-  try {
-    const { name, email, type, password } = req.body;
-    const updates = { name, email, type };
-    if (password) {
-      updates.password = await bcrypt.hash(password, 10);
+    try {
+        const { name, email, type, password } = req.body;
+        const updateData = { name, email, type };
+
+        if (password) {
+            updateData.password = await bcrypt.hash(password, 10);
+        }
+
+        const user = await User.findByIdAndUpdate(req.params.id, updateData, { new: true }).select('-password');
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json(user);
+    } catch (err) {
+        next(err);
     }
-    await User.update(updates, { where: { id: req.params.id } });
-    res.json({ message: 'User updated' });
-  } catch (err) { next(err); }
 }
 
 export async function deleteUser(req, res, next) {
-  try {
-    const id = req.params.id;
-    // if this user is an alumnus, delete their bio first
-    const user = await User.findByPk(id);
-    if (user.alumnus_id) {
-      await AlumnusBio.destroy({ where: { id: user.alumnus_id } });
+    try {
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ message: 'User deleted successfully' });
+    } catch (err) {
+        next(err);
     }
-    await User.destroy({ where: { id } });
-    res.json({ message: 'User deleted' });
-  } catch (err) { next(err); }
 }

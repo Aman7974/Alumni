@@ -2,7 +2,7 @@ import { Gallery } from '../models/Index.js';
 import fs from 'fs';
 
 export async function listGallery(req, res, next) {
-    try { res.json(await Gallery.findAll({ order: [['id', 'DESC']] })); } catch (err) { next(err); }
+    try { res.json(await Gallery.find().sort({ _id: -1 })); } catch (err) { next(err); }
 }
 
 export async function addGallery(req, res, next) {
@@ -14,9 +14,9 @@ export async function addGallery(req, res, next) {
 
 export async function deleteGallery(req, res, next) {
     try {
-        const img = await Gallery.findByPk(req.params.id);
+        const img = await Gallery.findById(req.params.id);
         if (img) fs.unlinkSync(img.image_path);
-        await img.destroy();
+        await Gallery.findByIdAndDelete(req.params.id);
         res.json({ message: 'Deleted' });
     } catch (err) { next(err); }
 }

@@ -1,32 +1,26 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../utils/db.js';
+import mongoose from 'mongoose';
 
-const Course = sequelize.define('Course', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const courseSchema = new mongoose.Schema({
   course: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true
   },
   about: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-    defaultValue: ''
+    type: String,
+    default: ''
   }
 }, {
-  tableName: 'courses',
+  collection: 'courses',
   timestamps: false
 });
 
-// Associations
-Course.associate = (models) => {
-  Course.hasMany(models.AlumnusBio, {
-    foreignKey: 'course_id',
-    as: 'alumni'
-  });
-};
+courseSchema.virtual('alumni', {
+  ref: 'AlumnusBio',
+  localField: '_id',
+  foreignField: 'course_id'
+});
 
-export default Course;
+courseSchema.set('toJSON', { virtuals: true });
+courseSchema.set('toObject', { virtuals: true });
+
+export default mongoose.model('Course', courseSchema);

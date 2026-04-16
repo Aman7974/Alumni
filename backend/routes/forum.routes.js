@@ -1,4 +1,6 @@
 import express from 'express';
+import { authenticate, isAdmin } from '../middlewares/auth.middleware.js';
+import { validate, forumTopicSchema } from '../utils/validators.js';
 import {
   listForums,
   addForum,
@@ -12,14 +14,18 @@ import {
 
 const router = express.Router();
 
+// Public: list forums and comments
 router.get('/', listForums);
-router.post('/', addForum);
-router.put('/:id', updateForum);
-router.delete('/:id', deleteForum);
-
 router.get('/:topicId/comments', listComments);
-router.post('/:topicId/comments', addComment);
-router.put('/comments/:id', updateComment);
-router.delete('/comments/:id', deleteComment);
+
+// Protected: add topic and comments
+router.post('/', authenticate, validate(forumTopicSchema), addForum);
+router.post('/:topicId/comments', authenticate, addComment);
+
+// Admin only: update/delete topics and comments
+router.put('/:id', authenticate, isAdmin, updateForum);
+router.delete('/:id', authenticate, isAdmin, deleteForum);
+router.put('/comments/:id', authenticate, isAdmin, updateComment);
+router.delete('/comments/:id', authenticate, isAdmin, deleteComment);
 
 export default router;

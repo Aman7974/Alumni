@@ -1,16 +1,16 @@
 import express from 'express';
-import {
-  listCourses,
-  addCourse,
-  updateCourse,
-  deleteCourse
-} from '../controllers/course.controller.js';
+import { authenticate, isAdmin } from '../middlewares/auth.middleware.js';
+import { listCourses, addCourse, updateCourse, deleteCourse } from '../controllers/course.controller.js';
+import { validate, courseSchema } from '../utils/validators.js';
 
 const router = express.Router();
 
+// Public: list courses
 router.get('/', listCourses);
-router.post('/', addCourse);
-router.put('/:id', updateCourse);
-router.delete('/:id', deleteCourse);
+
+// Admin only: manage courses
+router.post('/', authenticate, isAdmin, validate(courseSchema), addCourse);
+router.put('/:id', authenticate, isAdmin, updateCourse);
+router.delete('/:id', authenticate, isAdmin, deleteCourse);
 
 export default router;

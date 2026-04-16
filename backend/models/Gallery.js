@@ -1,27 +1,21 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../utils/db.js';
+import mongoose from 'mongoose';
 
-const Gallery = sequelize.define('Gallery', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const gallerySchema = new mongoose.Schema({
   image_path: {
-    type: DataTypes.STRING(255),
-    allowNull: false
+    type: String,
+    required: true
   },
   about: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true
   },
   created: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+    type: Date,
+    default: Date.now
   }
 }, {
-  tableName: 'gallery',
+  collection: 'gallery',
   timestamps: false
 });
 
-export default Gallery;
+export default mongoose.model('Gallery', gallerySchema);

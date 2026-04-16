@@ -1,44 +1,42 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../utils/db.js';
+import mongoose from 'mongoose';
 
-const ForumTopic = sequelize.define('ForumTopic', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const forumTopicSchema = new mongoose.Schema({
   title: {
-    type: DataTypes.STRING(250),
-    allowNull: false
+    type: String,
+    required: true
   },
   description: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: String,
+    required: true
   },
   user_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   date_created: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+    type: Date,
+    default: Date.now
   }
 }, {
-  tableName: 'forum_topics',
+  collection: 'forum_topics',
   timestamps: false
 });
 
-// Associations
-ForumTopic.associate = (models) => {
-  ForumTopic.hasMany(models.ForumComment, {
-    foreignKey: 'topic_id',
-    as: 'comments'
-  });
-  
-  ForumTopic.belongsTo(models.User, {
-    foreignKey: 'user_id',
-    as: 'user'
-  });
-};
+forumTopicSchema.virtual('comments', {
+  ref: 'ForumComment',
+  localField: '_id',
+  foreignField: 'topic_id'
+});
 
-export default ForumTopic;
+forumTopicSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+forumTopicSchema.set('toJSON', { virtuals: true });
+forumTopicSchema.set('toObject', { virtuals: true });
+
+export default mongoose.model('ForumTopic', forumTopicSchema);

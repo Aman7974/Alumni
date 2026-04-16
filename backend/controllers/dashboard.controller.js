@@ -1,15 +1,17 @@
 import { ForumTopic, Career, Event, AlumnusBio } from '../models/Index.js';
-import { Op } from 'sequelize';
 
 export async function getCounts(req, res, next) {
   try {
-    const [ forumCount, jobCount, eventCount, upEventCount, alumniCount ] = await Promise.all([
-      ForumTopic.count(),
-      Career.count(),
-      Event.count(),
-      Event.count({ where: { schedule: { [Op.gte]: new Date() } } }),
-      AlumnusBio.count()
+    const [ forumCount, jobCount, eventCount, alumniCount ] = await Promise.all([
+      ForumTopic.countDocuments(),
+      Career.countDocuments(),
+      Event.countDocuments(),
+      AlumnusBio.countDocuments()
     ]);
+
+    // Count upcoming events (schedule >= now)
+    const upEventCount = await Event.countDocuments({ schedule: { $gte: new Date() } });
+
     res.json({
       forums: forumCount,
       jobs: jobCount,

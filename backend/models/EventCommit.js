@@ -1,36 +1,36 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../utils/db.js';
+import mongoose from 'mongoose';
 
-const EventCommit = sequelize.define('EventCommit', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const eventCommitSchema = new mongoose.Schema({
   event_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Event',
+    required: true
   },
   user_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   }
 }, {
-  tableName: 'event_commits',
+  collection: 'event_commits',
   timestamps: false
 });
 
-// Associations
-EventCommit.associate = (models) => {
-  EventCommit.belongsTo(models.Event, {
-    foreignKey: 'event_id',
-    as: 'event'
-  });
-  
-  EventCommit.belongsTo(models.User, {
-    foreignKey: 'user_id',
-    as: 'user'
-  });
-};
+eventCommitSchema.virtual('event', {
+  ref: 'Event',
+  localField: 'event_id',
+  foreignField: '_id',
+  justOne: true
+});
 
-export default EventCommit;
+eventCommitSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+eventCommitSchema.set('toJSON', { virtuals: true });
+eventCommitSchema.set('toObject', { virtuals: true });
+
+export default mongoose.model('EventCommit', eventCommitSchema);

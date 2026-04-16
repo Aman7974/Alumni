@@ -1,20 +1,18 @@
-import { Sequelize } from "sequelize";
-import config from "../config/config.js";
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
-const env = process.env.NODE_ENV || "development";
-const cfg = config[env];
+dotenv.config();
 
-const sequelize = new Sequelize(cfg.database, cfg.username, cfg.password, {
-  host: cfg.host,
-  dialect: cfg.dialect,
-  port: cfg.port || 3306,
-  logging: false,
-});
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/alumni_db';
 
-// Test connection
-sequelize
-  .authenticate()
-  .then(() => console.log("✅ Database connected successfully to XAMPP MySQL"))
-  .catch((err) => console.error("❌ Connection error:", err));
+const connectDB = async () => {
+  try {
+    await mongoose.connect(MONGODB_URI);
+    console.log('✅ MongoDB connected successfully');
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
+  }
+};
 
-export default sequelize;
+export default connectDB;

@@ -13,15 +13,25 @@ const Signup = () => {
         course_id: "",
     });
     const [courses, setCourses] = useState([]);
+    const [loading, setLoading] = useState(false);
 
 
     const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(values);
+        setLoading(true);
+
+        // Validate course selection for alumnus
+        if (values.userType === 'alumnus' && !values.course_id) {
+            toast.error("Please select a course");
+            setLoading(false);
+            return;
+        }
+
         axios.post(`${authUrl}/signup`, values)
             .then((res) => {
+                setLoading(false);
                 if (res.data.email) {
                     return toast.warning("Email Already Exists");
                 }
@@ -31,10 +41,14 @@ const Signup = () => {
                         navigate("/login", { state: { action: "navtologin" } })
                     }, 2000)
                 } else {
-                    toast.error("An error occurred");
+                    toast.error(res.data.error || "An error occurred");
                 }
             })
-            .catch(err => console.log(err))
+            .catch(err => {
+                setLoading(false);
+                console.log(err);
+                toast.error("Signup failed. Please try again.");
+            })
     }
 
     useEffect(() => {
@@ -92,7 +106,7 @@ const Signup = () => {
                                                 <select onChange={(e) => setValues({ ...values, course_id: e.target.value })} className="form-control select2" name="course_id" required value={values.course_id}>
                                                     <option disabled value="">Select course</option>
                                                     {courses.map(c => (
-                                                        <option key={c.id} value={c.id}>{c.course}</option>
+                                                        <option key={c._id} value={c._id}>{c.course}</option>
                                                     ))}
                                                 </select>
                                             </div>
@@ -100,7 +114,9 @@ const Signup = () => {
                                         <hr className="divider" />
                                         <div className="row justify-content-center">
                                             <div className="col-md-6 text-center">
-                                                <button type="submit" className="btn btn-info btn-block">Create Account</button>
+                                                <button type="submit" className="btn btn-info btn-block" disabled={loading}>
+                                                    {loading ? 'Creating Account...' : 'Create Account'}
+                                                </button>
                                             </div>
                                         </div>
                                     </form>

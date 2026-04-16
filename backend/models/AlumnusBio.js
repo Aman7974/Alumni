@@ -1,66 +1,59 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../utils/db.js';
+import mongoose from 'mongoose';
 
-const AlumnusBio = sequelize.define('AlumnusBio', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const alumnusBioSchema = new mongoose.Schema({
   name: {
-    type: DataTypes.STRING(255),
-    allowNull: false
+    type: String,
+    required: true
   },
   gender: {
-    type: DataTypes.STRING(10),
-    allowNull: true
+    type: String,
+    enum: ['Male', 'Female', 'Other', 'male', 'female', 'other'],
+    default: null
   },
   batch: {
-    type: DataTypes.INTEGER,
-    allowNull: true
+    type: Number,
+    default: null
   },
   course_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course',
+    required: true
   },
   email: {
-    type: DataTypes.STRING(250),
-    allowNull: false
+    type: String,
+    required: true,
+    lowercase: true,
+    trim: true
   },
   connected_to: {
-    type: DataTypes.TEXT,
-    allowNull: true
+    type: String,
+    default: null
   },
   avatar: {
-    type: DataTypes.TEXT,
-    allowNull: true
+    type: String,
+    default: null
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: 0,
-    comment: '0= Unverified, 1= Verified'
+    type: Boolean,
+    default: false
   },
   date_created: {
-    type: DataTypes.DATEONLY,
-    defaultValue: DataTypes.NOW
+    type: Date,
+    default: Date.now
   }
 }, {
-  tableName: 'alumnus_bio',
+  collection: 'alumnus_bio',
   timestamps: false
 });
 
-// Associations
-AlumnusBio.associate = (models) => {
-  AlumnusBio.hasOne(models.User, {
-    foreignKey: 'alumnus_id',
-    as: 'user',
-    constraints: false
-  });
-  
-  AlumnusBio.belongsTo(models.Course, {
-    foreignKey: 'course_id',
-    as: 'course'
-  });
-};
+alumnusBioSchema.virtual('user', {
+  ref: 'User',
+  localField: '_id',
+  foreignField: 'alumnus_id',
+  justOne: true
+});
 
-export default AlumnusBio;
+alumnusBioSchema.set('toJSON', { virtuals: true });
+alumnusBioSchema.set('toObject', { virtuals: true });
+
+export default mongoose.model('AlumnusBio', alumnusBioSchema);
